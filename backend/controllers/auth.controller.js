@@ -101,7 +101,9 @@ export const logout = async (req, res) => {
 export const currentUser = async (req, res) => {
 
     try {
-        const user = await User.findById(req.user._id).select("-password");
+        const user = await User.findById(req.user._id).select("-password").populate({
+            path: "likedPosts",
+        });
         return res.status(201).json(user)
     } catch (error) {
         console.log("Error in current user controller", error.message)

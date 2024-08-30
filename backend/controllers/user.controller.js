@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import Notification from "../models/notification.model.js";
+import Post from "../models/post.model.js";
 import { v2 as cloudinary } from "cloudinary"
 
 export const getUserProfile = async (req, res) => {
@@ -100,9 +101,9 @@ export const updateUser = async (req, res) => {
         }
 
         if (newPassword && currentPassword) {
-          
+
             const isMatch = await bcrypt.compare(currentPassword, user.password)
-            
+
             if (!isMatch) return res.status(404).json({ error: "Current password is incorrect" })
             if (newPassword.length < 6) {
                 return res.status(400).json({ error: "Password must be at least 6 character long" });
@@ -112,7 +113,7 @@ export const updateUser = async (req, res) => {
             user.password = await bcrypt.hash(newPassword, 10);
 
         }
-       
+
         if (profileImg) {
             if (user.profileImg) {
                 await cloudinary.uploader.destroy(user.profileImg.split('/').pop().split('.')[0])
@@ -140,5 +141,42 @@ export const updateUser = async (req, res) => {
     } catch (error) {
         console.log("Error in updateUser controller", error.message)
         return res.status(500).json({ error: "Internal Server Error in updateUser controller" })
+    }
+};
+export const getLikedPost = async (req, res) => {
+
+    const currentUser = req.user._id
+    try {
+        const user = await User.findById(currentUser)
+        if (!user) {
+            return res.status(404).json({ error: "User not found" })
+        }
+        const likedPosts = await Post.find({ _id: { $in: user.likedPosts } })
+            .populate({ path: "user", select: "-password" })
+            .populate({ path: "comments.user", select: "-password" })
+
+        return res.status(201).json(likedPosts)
+    } catch (error) {
+        console.log("Error in getLikedPost controller", error.message)
+        return res.status(500).json({ error: "Internal Server Error in getLikedPost controller" })
+    }
+};
+export const getFollowingPost = async (req, res) => {
+
+    const currentUser = req.user._id
+    try {
+        const user = await User.findById(currentUser)
+        if (!user) {
+            return res.status(404).json({ error: "User not found" })
+        }
+        const folowingPosts = await Post.find({user: { $in: user.following } })
+        .sort({createdAt:-1})
+            .populate({ path: "user", select: "-password" })
+            .populate({ path: "comments.user", select: "-password" })
+
+        return res.status(201).json({data:folowingPosts,following:user.following})
+    } catch (error) {
+        console.log("Error in getFollowingPost controller", error.message)
+        return res.status(500).json({ error: "Internal Server Error in getFollowingPost controller" })
     }
 };
