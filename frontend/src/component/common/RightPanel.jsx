@@ -1,39 +1,35 @@
 import { Link } from "react-router-dom";
 import RightPanelSkeleton from "../skelentons/RightPanelSkelenton";
 import { USERS_FOR_RIGHT_PANEL } from "../../utils/db/dummy";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 const RightPanel = () => {
 	
-	const queryClient = useQueryClient()
-	const { mutate: mutateSuggestedUser, isPending,isLoading, error, isError, data:suggestedUser } = useMutation({
-		mutationFn: async ({ text, img }) => {
+	
+	const {isLoading, data:suggestedUser } = useQuery({
+		queryKey: ['suggestedUser'],
+		queryFn: async () => {
 			try {
 
-				const res = await fetch("api/users/suggested", {
-					method: "POST",
-	
-				})
+				const res = await fetch("api/users/suggested")
 				const data = await res.json()
-				if (!res.ok) throw new Error(data.error || "Unable to create post");
+				if (!res.ok) throw new Error(data.error || "Unable to get suggested users");
 				if (data.error) throw new Error(data.error)
+
+					return data;
 			} catch (error) {
 				throw error
 			}
-		},
-		onSuccess: () => {
-			
-			// toast.success("Post Created Successful")
-			// queryClient.invalidateQueries({ queryKey: ["posts"] })
-
 		}
 		
 	})
-	console.log(suggestedUser)
-	useEffect(() => {
-		mutateSuggestedUser()
-	}, [mutateSuggestedUser])
+	if(suggestedUser?.length === 0) <div className="md:w-64 w-0"></div>
+	
+	const handleFollow = (e) => {
+		e.preventDefault();
+		createPost({text,img})
+	};
 	return (
 		<div className='hidden lg:block my-4 mx-2'>
 			<div className='bg-[#16181C] p-4 rounded-md sticky top-2'>
