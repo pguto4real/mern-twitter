@@ -1,6 +1,6 @@
 import express from "express"
 import { protectRoute } from "../middleware/protectRoute.js"
-import { followUnfollowUser, getFollowingPost, getLikedPost, getSuggestedUsers, getUserProfile, updateUser } from "../controllers/user.controller.js"
+import { followUnfollowUser, getAllUsers, getFollowingPost, getLikedPost, getSuggestedUsers, getUserProfile, updateUser } from "../controllers/user.controller.js"
 
 
 
@@ -13,5 +13,6 @@ router.get('/following', protectRoute, getFollowingPost)
 router.get('/suggested', protectRoute, getSuggestedUsers)
 router.post('/follow/:id', protectRoute, followUnfollowUser)
 router.post('/update', protectRoute, updateUser)
+router.get('/', protectRoute, getAllUsers)
 
 export default router
