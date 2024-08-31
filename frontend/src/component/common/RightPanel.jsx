@@ -3,8 +3,10 @@ import RightPanelSkeleton from "../skelentons/RightPanelSkelenton";
 import { USERS_FOR_RIGHT_PANEL } from "../../utils/db/dummy";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import useFollow from "../../hooks/useFollow";
+import LoadingSpinner from "./LoadingSpinner";
 
-const RightPanel = () => {
+const RightPanel = ({currentUser}) => {
 	
 	
 	const {isLoading, data:suggestedUser } = useQuery({
@@ -24,11 +26,12 @@ const RightPanel = () => {
 		}
 		
 	})
+
+	const {follow,isPending} = useFollow()
 	if(suggestedUser?.length === 0) <div className="md:w-64 w-0"></div>
 	
-	const handleFollow = (e) => {
-		e.preventDefault();
-		createPost({text,img})
+	const handleFollow = (userId) => {	
+		follow(userId)
 	};
 	return (
 		<div className='hidden lg:block my-4 mx-2'>
@@ -67,9 +70,12 @@ const RightPanel = () => {
 								<div>
 									<button
 										className='btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm'
-										onClick={(e) => e.preventDefault()}
+										onClick={(e)=>{
+											e.preventDefault();
+											handleFollow(user._id)}
+										}
 									>
-										Follow
+										{isPending ? <LoadingSpinner size="sm"/>:"Follow"}
 									</button>
 								</div>
 							</Link>
