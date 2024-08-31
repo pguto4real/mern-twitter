@@ -31,7 +31,7 @@ export const getSuggestedUsers = async (req, res) => {
             }, {
                 $sample: { size: 10 }
             }
-        ]).select("-password");;
+        ]);
 
         const filteredUsers = users.filter((user) => !userFollowedByMe.following.includes(user._id))
         const suggestedUsers = filteredUsers.slice(0, 4)

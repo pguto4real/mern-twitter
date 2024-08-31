@@ -11,7 +11,7 @@ import LoadingSpinner from "./LoadingSpinner";
 
 const Post = ({ post, currentUser }) => {
 	const [comment, setComment] = useState("");
-	const [deleteError, setDeleteError] = useState("");
+
 	const postOwner = post.user;
 	const isLiked = false;
 	
@@ -31,7 +31,7 @@ const Post = ({ post, currentUser }) => {
 				const data = await res.json()
 				if (!res.ok) throw new Error(data.error || "Failed to delete post");
 				if (data.error) throw new Error(data.error)
-					setDeleteError(data.error)
+				
 			} catch (error) {
 				throw error
 				console.log(123)

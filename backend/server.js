@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 8000
 
 
 //middle ware
-app.use(express.json()) // for passing application json\\ to parse req.body
+app.use(express.json({limit:"5mb"})) // for passing application json\\ to parse req.body
 app.use(express.urlencoded({ extended: true }))//parse data(url encoded)
 
 app.use(cookieParser())

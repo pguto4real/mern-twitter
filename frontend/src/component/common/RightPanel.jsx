@@ -1,10 +1,39 @@
 import { Link } from "react-router-dom";
 import RightPanelSkeleton from "../skelentons/RightPanelSkelenton";
 import { USERS_FOR_RIGHT_PANEL } from "../../utils/db/dummy";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 const RightPanel = () => {
-	const isLoading = false;
+	
+	const queryClient = useQueryClient()
+	const { mutate: mutateSuggestedUser, isPending,isLoading, error, isError, data:suggestedUser } = useMutation({
+		mutationFn: async ({ text, img }) => {
+			try {
 
+				const res = await fetch("api/users/suggested", {
+					method: "POST",
+	
+				})
+				const data = await res.json()
+				if (!res.ok) throw new Error(data.error || "Unable to create post");
+				if (data.error) throw new Error(data.error)
+			} catch (error) {
+				throw error
+			}
+		},
+		onSuccess: () => {
+			
+			// toast.success("Post Created Successful")
+			// queryClient.invalidateQueries({ queryKey: ["posts"] })
+
+		}
+		
+	})
+	console.log(suggestedUser)
+	useEffect(() => {
+		mutateSuggestedUser()
+	}, [mutateSuggestedUser])
 	return (
 		<div className='hidden lg:block my-4 mx-2'>
 			<div className='bg-[#16181C] p-4 rounded-md sticky top-2'>
@@ -20,7 +49,7 @@ const RightPanel = () => {
 						</>
 					)}
 					{!isLoading &&
-						USERS_FOR_RIGHT_PANEL?.map((user) => (
+						suggestedUser?.map((user) => (
 							<Link
 								to={`/profile/${user.username}`}
 								className='flex items-center justify-between gap-4'
