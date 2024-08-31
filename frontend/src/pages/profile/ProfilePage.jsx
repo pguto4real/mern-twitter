@@ -11,6 +11,7 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const ProfilePage = () => {
 	const [coverImg, setCoverImg] = useState(null);
@@ -20,9 +21,29 @@ const ProfilePage = () => {
 	const coverImgRef = useRef(null);
 	const profileImgRef = useRef(null);
 
-	const isLoading = false;
+	// const isLoading = false;
 	const isMyProfile = true;
+	const queryClient = useQueryClient()
+	const { mutate: profileMutate, isPending,isLoading,data:profileData } = useMutation({
+		mutationFn: async () => {
+			try {
 
+				const res = await fetch(`users/profile/johndoe`)
+				const data = await res.json()
+				if (!res.ok) throw new Error(data.error || "Unable to create post");
+				if (data.error) throw new Error(data.error)
+                    return data
+			} catch (error) {
+				throw new Error(error.message)
+			}
+			return data;
+		},
+        onerror:()=>{
+            toast.error(error.message)
+        }
+		
+	})
+	console.log(profileData)
 	const user = {
 		_id: "1",
 		fullName: "John Doe",
