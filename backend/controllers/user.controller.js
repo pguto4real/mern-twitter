@@ -174,7 +174,7 @@ export const getFollowingPost = async (req, res) => {
             .populate({ path: "user", select: "-password" })
             .populate({ path: "comments.user", select: "-password" })
 
-        return res.status(201).json({data:folowingPosts,following:user.following})
+        return res.status(201).json(folowingPosts)
     } catch (error) {
         console.log("Error in getFollowingPost controller", error.message)
         return res.status(500).json({ error: "Internal Server Error in getFollowingPost controller" })
