@@ -14,14 +14,14 @@ const Post = ({ post, currentUser }) => {
 	const [deleteError, setDeleteError] = useState("");
 	const postOwner = post.user;
 	const isLiked = false;
-	console.log(currentUser, 'post', post)
+	
 	const isMyPost = post.user._id === currentUser._id;
 
 	const formattedDate = "1h";
 
 	const isCommenting = false;
 	const queryClient = useQueryClient()
-	const { mutate: deletePostMutation, isPending,error,data } = useMutation({
+	const { mutate: deletePostMutation, isPending } = useMutation({
 		mutationFn: async () => {
 			try {
 

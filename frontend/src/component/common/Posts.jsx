@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 const Posts = ({ feedType }) => {
-	console.log(feedType)
-	
+	const {data:currentUser} = useQuery({queryKey:['authUser']})
+
 	const getPostEndPoint = () => {
 		switch (feedType) {
 			case 'forYou':
@@ -21,10 +21,10 @@ const Posts = ({ feedType }) => {
 				return '/api/posts'
 		}
 	}
-
+	
 	const POST_ENDPOINT = getPostEndPoint()
 
-	const { data:posts, isLoading, refetch, isRefetching } = useQuery({
+	const { data: posts, isLoading, refetch, isRefetching } = useQuery({
 		queryKey: ['posts'],
 		queryFn: async (params) => {
 			try {
@@ -58,7 +58,7 @@ const Posts = ({ feedType }) => {
 			{!isLoading && !isRefetching && posts && (
 				<div>
 					{posts.map((post) => (
-						<Post key={post._id} post={post} />
+						<Post key={post._id} post={post} currentUser={currentUser}/>
 					))}
 				</div>
 			)}
