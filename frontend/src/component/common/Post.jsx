@@ -28,7 +28,7 @@ const Post = ({ post, currentUser }) => {
 		mutationFn: async () => {
 			try {
 
-				const res = await fetch(`api/posts/${post._id}`, {
+				const res = await fetch(`/api/posts/${post._id}`, {
 					method: "DELETE",
 				})
 				const data = await res.json()
@@ -63,7 +63,7 @@ const Post = ({ post, currentUser }) => {
 				const data = await res.json()
 				if (!res.ok) throw new Error(data.error || "Failed to like post");
 				if (data.error) throw new Error(data.error)
-				setIsLiked(!isLiked)
+					setIsLiked(!isLiked)
 				return data
 			} catch (error) {
 				throw error
@@ -97,7 +97,7 @@ const Post = ({ post, currentUser }) => {
 			console.log(text)
 			
 			try {
-				const res = await fetch(`api/posts/comment/${post._id}`, {
+				const res = await fetch(`/api/posts/comment/${post._id}`, {
 					method: "POST",
 					headers: {
 						"content-type": "application/json"
@@ -115,15 +115,7 @@ const Post = ({ post, currentUser }) => {
 		},
 		onSuccess: (updatedLikes) => {
 			toast.success("Comment Posted Successful")
-			// queryClient.setQueryData(['posts'], (oldData) => {
-			// 	return oldData.map(p => {
-			// 		if (p._id === post._id) {
-			// 			return { ...p, likes: updatedLikes.data }
-			// 		}
-			// 		return p
-			// 	})
-
-			// })
+		
 			queryClient.invalidateQueries({ queryKey: ["posts"] })
 
 
@@ -156,17 +148,17 @@ const Post = ({ post, currentUser }) => {
 		<>
 			<div className='flex gap-2 items-start p-4 border-b border-gray-700'>
 				<div className='avatar'>
-					<Link to={`/profile/${postOwner.username}`} className='w-8 rounded-full overflow-hidden'>
+					<Link to={`/${postOwner.username}`} className='w-8 rounded-full overflow-hidden'>
 						<img src={postOwner.profileImg || "/avatar-placeholder.png"} />
 					</Link>
 				</div>
 				<div className='flex flex-col flex-1'>
 					<div className='flex gap-2 items-center'>
-						<Link to={`/profile/${postOwner.username}`} className='font-bold'>
+						<Link to={`/${postOwner.username}`} className='font-bold'>
 							{postOwner.fullName}
 						</Link>
 						<span className='text-gray-700 flex gap-1 text-sm'>
-							<Link to={`/profile/${postOwner.username}`}>@{postOwner.username}</Link>
+							<Link to={`/${postOwner.username}`}>@{postOwner.username}</Link>
 							<span>·</span>
 							<span>{formattedDate}</span>
 						</span>
@@ -261,7 +253,7 @@ const Post = ({ post, currentUser }) => {
 								{!isLiked && !isLiking && (
 									<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
 								)}
-								{isLiked && <FaHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />}
+								{isLiked  && !isLiking && <FaHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />}
 
 								<span
 									className={`text-sm text-slate-500 group-hover:text-pink-500 ${isLiked ? "text-pink-500" : ""

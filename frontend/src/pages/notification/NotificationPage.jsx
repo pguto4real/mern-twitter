@@ -14,7 +14,7 @@ const NotificationPage = () => {
 		queryFn: async () => {
 			try {
 
-				const res = await fetch("api/notifications")
+				const res = await fetch("/api/notifications")
 				const data = await res.json()
 				if (!res.ok) throw new Error(data.error || "Unable to get notifications");
 				if (data.error) throw new Error(data.error)
@@ -29,7 +29,7 @@ const NotificationPage = () => {
 	const { mutate: deleteNotification } = useMutation({
 		mutationFn: async () => {
 			try {
-				const res = await fetch(`api/notifications`, {
+				const res = await fetch(`/api/notifications`, {
 					method: "DELETE",
 				})
 				const data = await res.json()
@@ -83,8 +83,8 @@ const NotificationPage = () => {
 						<LoadingSpinner size='lg' />
 					</div>
 				)}
-				{notifications?.length === 0 && <div className='text-center p-4 font-bold'>No notifications 🤔</div>}
-				{notifications?.map((notification) => (
+				{!isLoading && notifications?.length === 0 && <div className='text-center p-4 font-bold'>No notifications 🤔</div>}
+				{!isLoading && notifications?.length >0 && notifications?.map((notification) => (
 					<Notification notification={notification}/>
 				))}
 			</div>

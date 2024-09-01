@@ -21,7 +21,8 @@ export const getSuggestedUsers = async (req, res) => {
 
     try {
         const currentUser = req.user._id
-        console.log(currentUser)
+
+  
         const userFollowedByMe = await User.findById(currentUser).select("following");
         const users = await User.aggregate([
             {
@@ -143,7 +144,7 @@ export const updateUser = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error in updateUser controller" })
     }
 };
-export const getLikedPost = async (req, res) => {
+export const getLikedPostByCurrentUser = async (req, res) => {
 
     const currentUser = req.user._id
     try {

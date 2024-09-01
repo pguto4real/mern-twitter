@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 import Posts from "../../component/common/Posts";
 import ProfileHeaderSkeleton from "../../component/skelentons/ProfileHeaderSkeleton";
@@ -11,7 +11,8 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatMemberSinceDate } from "../../utils/date";
 
 const ProfilePage = () => {
 	const [coverImg, setCoverImg] = useState(null);
@@ -20,41 +21,53 @@ const ProfilePage = () => {
 
 	const coverImgRef = useRef(null);
 	const profileImgRef = useRef(null);
+	
+	const {username} = useParams()
+	const { data: currentUser } = useQuery({ queryKey: ['authUser'] })
 
-	// const isLoading = false;
-	const isMyProfile = true;
-	const queryClient = useQueryClient()
-	const { mutate: profileMutate, isPending,isLoading,data:profileData } = useMutation({
-		mutationFn: async () => {
+	const {isLoading, data:user,refetch,isRefetching } = useQuery({
+		queryKey: ["notifications"],
+		queryFn: async () => {
 			try {
 
-				const res = await fetch(`users/profile/johndoe`)
+				const res = await fetch(`/api/users/profile/${username}`)
 				const data = await res.json()
-				if (!res.ok) throw new Error(data.error || "Unable to create post");
+				if (!res.ok) throw new Error(data.error || "Unable to get data");
 				if (data.error) throw new Error(data.error)
-                    return data
+					return data;
 			} catch (error) {
-				throw new Error(error.message)
+				throw error
 			}
-			return data;
-		},
-        onerror:()=>{
-            toast.error(error.message)
-        }
+		}
 		
 	})
-	console.log(profileData)
-	const user = {
-		_id: "1",
-		fullName: "John Doe",
-		username: "johndoe",
-		profileImg: "/avatars/boy2.png",
-		coverImg: "/cover.png",
-		bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-		link: "https://youtube.com/@asaprogrammer_",
-		following: ["1", "2", "3"],
-		followers: ["1", "2", "3"],
-	};
+
+	useEffect(() => {
+		refetch()
+	}, [username, refetch])
+	const isMyProfile = currentUser.username === username;
+	// const isLoading = false;
+	
+	// const queryClient = useQueryClient()
+	// const { mutate: profileMutate, isPending,isLoading,data:profileData } = useMutation({
+	// 	mutationFn: async () => {
+	// 		try {
+
+	// 			const res = await fetch(`users/profile/johndoe`)
+	// 			const data = await res.json()
+	// 			if (!res.ok) throw new Error(data.error || "Unable to create post");
+	// 			if (data.error) throw new Error(data.error)
+    //                 return data
+	// 		} catch (error) {
+	// 			throw new Error(error.message)
+	// 		}
+	// 		return data;
+	// 	},
+    //     onerror:()=>{
+    //         toast.error(error.message)
+    //     }
+		
+	// })
 
 	const handleImgChange = (e, state) => {
 		const file = e.target.files[0];
@@ -72,10 +85,10 @@ const ProfilePage = () => {
 		<>
 			<div className='flex-[4_4_0]  border-r border-gray-700 min-h-screen '>
 				{/* HEADER */}
-				{isLoading && <ProfileHeaderSkeleton />}
-				{!isLoading && !user && <p className='text-center text-lg mt-4'>User not found</p>}
+				{isLoading || isRefetching && <ProfileHeaderSkeleton />}
+				{!isLoading && !isRefetching && !user && <p className='text-center text-lg mt-4'>User not found</p>}
 				<div className='flex flex-col'>
-					{!isLoading && user && (
+					{!isLoading && !isRefetching && user && (
 						<>
 							<div className='flex gap-10 px-4 py-2 items-center'>
 								<Link to='/'>
@@ -83,7 +96,7 @@ const ProfilePage = () => {
 								</Link>
 								<div className='flex flex-col'>
 									<p className='font-bold text-lg'>{user?.fullName}</p>
-									<span className='text-sm text-slate-500'>{POSTS?.length} posts</span>
+									<span className='text-sm text-slate-500'>{user?.length} posts</span>
 								</div>
 							</div>
 							{/* COVER IMG */}
@@ -167,14 +180,14 @@ const ProfilePage = () => {
 													rel='noreferrer'
 													className='text-sm text-blue-500 hover:underline'
 												>
-													youtube.com/@asaprogrammer_
+													{user?.link}
 												</a>
 											</>
 										</div>
 									)}
 									<div className='flex gap-2 items-center'>
 										<IoCalendarOutline className='w-4 h-4 text-slate-500' />
-										<span className='text-sm text-slate-500'>Joined July 2021</span>
+										<span className='text-sm text-slate-500'>{formatMemberSinceDate(user?.createdAt)}</span>
 									</div>
 								</div>
 								<div className='flex gap-2'>
@@ -211,7 +224,7 @@ const ProfilePage = () => {
 						</>
 					)}
 
-					<Posts />
+					<Posts feedType={feedType} username={username} userId={user?._id}/>
 				</div>
 			</div>
 		</>

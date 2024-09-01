@@ -20,7 +20,7 @@ function App() {
         const data = await res.json()
         if (data.error) return null
         if (!res.ok) throw new Error(data.error || "Something went wrong");
-        console.log("Auth User: ", data)
+        // console.log("Auth User: ", data)
         return data
       } catch (error) {
         throw new Error(error)
@@ -43,7 +43,7 @@ function App() {
         <Route path='/signup' element={!authUser ? <SignUpPage /> : <Navigate to='/' />} />
         <Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to='/' />} />
         <Route path='/notifications' element={authUser ? <NotificationPage /> : <Navigate to='/login' />} />
-        <Route path='/profile/:username' element={authUser ? <ProfilePage /> : <Navigate to='/login' />} />
+        <Route path='/:username' element={authUser ? <ProfilePage /> : <Navigate to='/login' />} />
       </Routes>
       {authUser &&<RightPanel currentUser={authUser}/>}
       <Toaster />
