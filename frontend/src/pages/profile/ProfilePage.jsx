@@ -5,17 +5,17 @@ import Posts from "../../component/common/Posts";
 import ProfileHeaderSkeleton from "../../component/skelentons/ProfileHeaderSkeleton";
 import EditProfileModal from "./EditProfileModal";
 
-import { POSTS } from "../../utils/db/dummy";
 
 import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date";
 import useFollow from "../../hooks/useFollow";
 import LoadingSpinner from "../../component/common/LoadingSpinner";
-import toast from "react-hot-toast";
+
+import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
 
 const ProfilePage = () => {
 	const [coverImg, setCoverImg] = useState(null);
@@ -27,6 +27,7 @@ const ProfilePage = () => {
 
 	const { username } = useParams()
 	const { follow, isPending } = useFollow()
+	const { updateProfile, isUpdatingProfile } = useUpdateUserProfile()
 	const { data: currentUser } = useQuery({ queryKey: ['authUser'] })
 
 	const { isLoading, data: user, refetch, isRefetching } = useQuery({
@@ -49,6 +50,7 @@ const ProfilePage = () => {
 	useEffect(() => {
 		refetch()
 	}, [username, refetch])
+
 	const isMyProfile = currentUser._id === user?._id;
 	const amIFollowing = currentUser?.following.includes(user?._id);
 
@@ -64,44 +66,6 @@ const ProfilePage = () => {
 		}
 	};
 
-	const queryClient = useQueryClient()
-	const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
-		mutationFn: async () => {
-			try {
-
-				const res = await fetch(`api/users/update`, {
-					method: "POST",
-					headers: {
-						"content-type": "application/json"
-					},
-					body: JSON.stringify({
-						coverImg, profileImg
-					})
-				})
-				const data = await res.json()
-				if (!res.ok) throw new Error(data.error || "Unable to update post");
-				if (data.error) throw new Error(data.error)
-				return data
-			} catch (error) {
-				throw new Error(error.message)
-			}
-		},
-		onSuccess: () => {
-// alert(123)
-			toast.success("Profile Updated  Successful")
-
-			Promise.all([
-				queryClient.invalidateQueries({ queryKey: ["authUser"] }),
-				queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
-			])
-
-
-		},
-		onerror: () => {
-			toast.error(error.message)
-		}
-
-	})
 
 	return (
 		<>
@@ -165,7 +129,7 @@ const ProfilePage = () => {
 								</div>
 							</div>
 							<div className='flex justify-end px-4 mt-5'>
-								{isMyProfile && <EditProfileModal currentUser={currentUser}/>}
+								{isMyProfile && <EditProfileModal currentUser={currentUser} />}
 								{!isMyProfile && (
 									<button
 										className='btn btn-outline rounded-full btn-sm'
@@ -180,9 +144,13 @@ const ProfilePage = () => {
 								{(coverImg || profileImg) && (
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
-										onClick={() => updateProfile()}
+										onClick={async() => {
+											await updateProfile({ coverImg, profileImg })
+											setCoverImg(null)
+											setProfileImg(null)
+										}}
 									>
-										{isUpdatingProfile ? "Updating..." : "Save"}
+										{isUpdatingProfile ? "Updating..." : "Update"}
 									</button>
 								)}
 							</div>

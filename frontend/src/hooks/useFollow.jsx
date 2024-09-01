@@ -34,7 +34,7 @@ const useFollow = () => {
 			
 
 		},
-        onerror:()=>{
+        onError:(error)=>{
             toast.error(error.message)
         }
 		

@@ -48,7 +48,7 @@ const NotificationPage = () => {
 		}
 		,
 		onError: () => {
-			// console.log(deleteError)
+		
 			toast.error("cant find post")
 
 		}

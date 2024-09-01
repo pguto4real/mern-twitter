@@ -23,7 +23,7 @@ export const createPost = async (req, res) => {
             const uploadedResponse = await cloudinary.uploader.upload(img)
             img = uploadedResponse.secure_url
         }
-        // return
+    
         const newPost = new Post({
             user: currentUser,
             text,
@@ -118,8 +118,7 @@ export const likeUnlikePost = async (req, res) => {
             return res.status(201).json({ message: "Post unliked succesfully", data: updatedLikes })
         }
         else {
-            //follow
-            // const newPost = await Post.findByIdAndUpdate(id, { $push: { likes: userId } })
+           
             await User.findByIdAndUpdate(userId, { $push: { likedPosts: id } })
             postToModify.likes.push(userId)
             await postToModify.save()
