@@ -85,7 +85,7 @@ const NotificationPage = () => {
 				)}
 				{!isLoading && notifications?.length === 0 && <div className='text-center p-4 font-bold'>No notifications 🤔</div>}
 				{!isLoading && notifications?.length >0 && notifications?.map((notification) => (
-					<Notification notification={notification}/>
+					<Notification key={notification._id} notification={notification}/>
 				))}
 			</div>
 		</>

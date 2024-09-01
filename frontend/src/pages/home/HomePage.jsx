@@ -3,7 +3,7 @@ import { useState } from "react";
 import Posts from "../../component/common/Posts";
 import CreatePost from "./CreatePost";
 
-export const HomePage = () => {
+const HomePage = () => {
 	const [feedType, setFeedType] = useState("forYou");
 
 	return (
@@ -42,3 +42,4 @@ export const HomePage = () => {
 		</>
 	);
 };
+export default HomePage;

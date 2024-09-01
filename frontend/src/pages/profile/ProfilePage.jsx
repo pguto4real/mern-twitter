@@ -11,11 +11,12 @@ import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
-import { formatMemberSinceDate } from "../../utils/date";
+// import { formatMemberSinceDate } from "../../utils/date/functions";
 import useFollow from "../../hooks/useFollow";
 import LoadingSpinner from "../../component/common/LoadingSpinner";
 
 import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
+import { formatMemberSinceDate } from "../../utils/date/functions";
 
 const ProfilePage = () => {
 	const [coverImg, setCoverImg] = useState(null);
