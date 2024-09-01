@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
+import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post, currentUser }) => {
 	const [comment, setComment] = useState("");
@@ -19,9 +20,9 @@ const Post = ({ post, currentUser }) => {
 
 	const isMyPost = post.user._id === currentUser._id;
 
-	const formattedDate = "1h";
+	const formattedDate = formatPostDate(post.createdAt);
 
-	const isCommenting = false;
+
 	const queryClient = useQueryClient()
 	const { mutate: deletePostMutation, isPending: isDeleting } = useMutation({
 		mutationFn: async () => {
@@ -91,6 +92,50 @@ const Post = ({ post, currentUser }) => {
 		}
 
 	})
+	const { mutate: commentPost, isPending: isCommenting } = useMutation({
+		mutationFn: async (text) => {
+			console.log(text)
+			
+			try {
+				const res = await fetch(`api/posts/comment/${post._id}`, {
+					method: "POST",
+					headers: {
+						"content-type": "application/json"
+					},
+					body: JSON.stringify({text:comment })
+				})
+				const data = await res.json()
+				if (!res.ok) throw new Error(data.error || "Failed to comment on post");
+				if (data.error) throw new Error(data.error)
+				setIsLiked(!isLiked)
+				return data
+			} catch (error) {
+				throw error
+			}
+		},
+		onSuccess: (updatedLikes) => {
+			toast.success("Comment Posted Successful")
+			// queryClient.setQueryData(['posts'], (oldData) => {
+			// 	return oldData.map(p => {
+			// 		if (p._id === post._id) {
+			// 			return { ...p, likes: updatedLikes.data }
+			// 		}
+			// 		return p
+			// 	})
+
+			// })
+			queryClient.invalidateQueries({ queryKey: ["posts"] })
+
+
+		}
+		,
+		onError: () => {
+			// console.log(deleteError)
+			toast.error(error.message)
+
+		}
+
+	})
 	const handleDeletePost = () => {
 		deletePostMutation()
 
@@ -98,6 +143,8 @@ const Post = ({ post, currentUser }) => {
 
 	const handlePostComment = (e) => {
 		e.preventDefault();
+		if (isCommenting) return
+		commentPost(comment)
 	};
 
 	const handleLikePost = () => {
