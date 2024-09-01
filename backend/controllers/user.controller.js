@@ -120,14 +120,14 @@ export const updateUser = async (req, res) => {
                 await cloudinary.uploader.destroy(user.profileImg.split('/').pop().split('.')[0])
             }
             const uploadedResponse = await cloudinary.uploader.upload(profileImg)
-            profileImg = uploaded.secure_url
+            profileImg = uploadedResponse.secure_url
         }
         if (coverImg) {
             if (user.coverImg) {
                 await cloudinary.uploader.destroy(user.coverImg.split('/').pop().split('.')[0])
             }
             const uploadedResponse = await cloudinary.uploader.upload(coverImg)
-            coverImg = uploaded.secure_url
+            coverImg = uploadedResponse.secure_url
         }
         user.fullName = fullName || user.fullName
         user.username = username || user.username
@@ -140,7 +140,7 @@ export const updateUser = async (req, res) => {
         user.password = null
         return res.status(201).json(user)
     } catch (error) {
-        console.log("Error in updateUser controller", error.message)
+        console.log("Error in updateUser controller", error)
         return res.status(500).json({ error: "Internal Server Error in updateUser controller" })
     }
 };

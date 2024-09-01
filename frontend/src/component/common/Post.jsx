@@ -12,14 +12,17 @@ import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post, currentUser }) => {
 	const [comment, setComment] = useState("");
-	const [isLiked, setIsLiked] = useState(post.likes.some(like => like._id === currentUser._id));
+
 
 	const postOwner = post.user;
 
-	// console.log('post=>',post,'liked=>',isLiked,'userid',currentUser._id)
+
 
 	const isMyPost = post.user._id === currentUser._id;
 
+
+	const [isLiked, setIsLiked] = useState(post.likes.some(like=>like._id===currentUser._id))
+console.log(post._id,'=>',isLiked)
 	const formattedDate = formatPostDate(post.createdAt);
 
 
@@ -63,7 +66,7 @@ const Post = ({ post, currentUser }) => {
 				const data = await res.json()
 				if (!res.ok) throw new Error(data.error || "Failed to like post");
 				if (data.error) throw new Error(data.error)
-					setIsLiked(!isLiked)
+			
 				return data
 			} catch (error) {
 				throw error
@@ -107,7 +110,7 @@ const Post = ({ post, currentUser }) => {
 				const data = await res.json()
 				if (!res.ok) throw new Error(data.error || "Failed to comment on post");
 				if (data.error) throw new Error(data.error)
-				setIsLiked(!isLiked)
+			
 				return data
 			} catch (error) {
 				throw error
@@ -140,10 +143,11 @@ const Post = ({ post, currentUser }) => {
 	};
 
 	const handleLikePost = () => {
+		setIsLiked(prev => !prev)
 		if (isLiking) return
 		likeUnlikeMutation()
 	};
-	// console.log(post._id,'=>',isLiked)
+	
 	return (
 		<>
 			<div className='flex gap-2 items-start p-4 border-b border-gray-700'>

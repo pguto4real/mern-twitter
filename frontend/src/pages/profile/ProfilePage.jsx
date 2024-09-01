@@ -13,6 +13,9 @@ import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date";
+import useFollow from "../../hooks/useFollow";
+import LoadingSpinner from "../../component/common/LoadingSpinner";
+import toast from "react-hot-toast";
 
 const ProfilePage = () => {
 	const [coverImg, setCoverImg] = useState(null);
@@ -21,12 +24,13 @@ const ProfilePage = () => {
 
 	const coverImgRef = useRef(null);
 	const profileImgRef = useRef(null);
-	
-	const {username} = useParams()
+
+	const { username } = useParams()
+	const { follow, isPending } = useFollow()
 	const { data: currentUser } = useQuery({ queryKey: ['authUser'] })
 
-	const {isLoading, data:user,refetch,isRefetching } = useQuery({
-		queryKey: ["notifications"],
+	const { isLoading, data: user, refetch, isRefetching } = useQuery({
+		queryKey: ["userProfile"],
 		queryFn: async () => {
 			try {
 
@@ -34,40 +38,19 @@ const ProfilePage = () => {
 				const data = await res.json()
 				if (!res.ok) throw new Error(data.error || "Unable to get data");
 				if (data.error) throw new Error(data.error)
-					return data;
+				return data;
 			} catch (error) {
 				throw error
 			}
 		}
-		
+
 	})
 
 	useEffect(() => {
 		refetch()
 	}, [username, refetch])
-	const isMyProfile = currentUser.username === username;
-	// const isLoading = false;
-	
-	// const queryClient = useQueryClient()
-	// const { mutate: profileMutate, isPending,isLoading,data:profileData } = useMutation({
-	// 	mutationFn: async () => {
-	// 		try {
-
-	// 			const res = await fetch(`users/profile/johndoe`)
-	// 			const data = await res.json()
-	// 			if (!res.ok) throw new Error(data.error || "Unable to create post");
-	// 			if (data.error) throw new Error(data.error)
-    //                 return data
-	// 		} catch (error) {
-	// 			throw new Error(error.message)
-	// 		}
-	// 		return data;
-	// 	},
-    //     onerror:()=>{
-    //         toast.error(error.message)
-    //     }
-		
-	// })
+	const isMyProfile = currentUser._id === user?._id;
+	const amIFollowing = currentUser?.following.includes(user?._id);
 
 	const handleImgChange = (e, state) => {
 		const file = e.target.files[0];
@@ -80,6 +63,45 @@ const ProfilePage = () => {
 			reader.readAsDataURL(file);
 		}
 	};
+
+	const queryClient = useQueryClient()
+	const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
+		mutationFn: async () => {
+			try {
+
+				const res = await fetch(`api/users/update`, {
+					method: "POST",
+					headers: {
+						"content-type": "application/json"
+					},
+					body: JSON.stringify({
+						coverImg, profileImg
+					})
+				})
+				const data = await res.json()
+				if (!res.ok) throw new Error(data.error || "Unable to update post");
+				if (data.error) throw new Error(data.error)
+				return data
+			} catch (error) {
+				throw new Error(error.message)
+			}
+		},
+		onSuccess: () => {
+// alert(123)
+			toast.success("Profile Updated  Successful")
+
+			Promise.all([
+				queryClient.invalidateQueries({ queryKey: ["authUser"] }),
+				queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
+			])
+
+
+		},
+		onerror: () => {
+			toast.error(error.message)
+		}
+
+	})
 
 	return (
 		<>
@@ -143,21 +165,24 @@ const ProfilePage = () => {
 								</div>
 							</div>
 							<div className='flex justify-end px-4 mt-5'>
-								{isMyProfile && <EditProfileModal />}
+								{isMyProfile && <EditProfileModal currentUser={currentUser}/>}
 								{!isMyProfile && (
 									<button
 										className='btn btn-outline rounded-full btn-sm'
-										onClick={() => alert("Followed successfully")}
+										onClick={() => follow(user?._id)}
 									>
-										Follow
+										{isPending && <LoadingSpinner size="sm" />}
+										{!isPending && amIFollowing && "UnFollow"}
+										{!isPending && !amIFollowing && "Follow"}
+
 									</button>
 								)}
 								{(coverImg || profileImg) && (
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
-										onClick={() => alert("Profile updated successfully")}
+										onClick={() => updateProfile()}
 									>
-										Update
+										{isUpdatingProfile ? "Updating..." : "Save"}
 									</button>
 								)}
 							</div>
@@ -224,7 +249,7 @@ const ProfilePage = () => {
 						</>
 					)}
 
-					<Posts feedType={feedType} username={username} userId={user?._id}/>
+					<Posts feedType={feedType} username={username} userId={user?._id} />
 				</div>
 			</div>
 		</>
